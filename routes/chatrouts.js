@@ -16,22 +16,21 @@ router.post("/", protect, async (req, res) =>{
         return res.sendStatus(400);
      }
 
+
      let isChat = await Chat.find({
-       isGorupChat: false,
-
-       $and:[
-         { user: {$elemMatch: {$eq: req.user._id}}},
-         { user: {$elemMatch: {$eq: {userId}}}},
-       ]
-     }).populate("users", "-password").populate("latestMessage");
-
-     isChat = await User.populate(isChat, {
-        path: "latestMessage.sender",
-        select: "name pic email",
-     });
-
-     if(isChat.length > 0){
-        res.send(isChat[0]);
+      isGroupChat: false, 
+      
+      users: { $all: [req.user._id, userId] },
+    }).populate("users", "-password").populate("latestMessage");
+    
+    isChat = await User.populate(isChat, {
+      path: "latestMessage.sender",
+      select: "name pic email",
+    });
+    
+    
+    if(isChat.length){
+       res.send(isChat);
      }
      else{
         let chatData ={
@@ -46,7 +45,8 @@ router.post("/", protect, async (req, res) =>{
             const FullChat = await Chat.findOne({ _id: createdChat._id}).populate("users", "-password");
 
             res.status(200).send(FullChat);
-        } catch (error) {
+        }
+         catch (error) {
             
         }
      }

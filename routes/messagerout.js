@@ -51,7 +51,7 @@ router.post("/", protect, async(req, res) =>{
 router.get("/:chatId", protect, async(req, res) => {
     
     try {
-         const message =await Message.find({chat: req.params.chatId})
+         const message = await Message.find({chat: req.params.chatId})
          .populate("sender", "name pic email")
          .populate("chat");
 
