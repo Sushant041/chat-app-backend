@@ -20,6 +20,24 @@ app.use("/api/chat", chatrouter);
 app.use("/api/message", require("./routes/messagerout") );
 app.use(router)
 
+// DEPLOYMENT__________=======
+
+const __dirname1 = path.resolve();
+
+if(process.env.NODE_ENV === "PRODUCTION"){
+     
+  app.use(express.static(path.join(__dirname1, '/frontend/build')))
+
+  app.get('*', (req,res) =>{
+    res.sendFile(path.resolve(__dirname1, "frontend", "build", "index.html"))
+  });
+
+}else{
+  app.get("/", (req, res) =>{
+    res.send("running successfully");
+  })
+}
+
 app.use(notfound);
 
 
