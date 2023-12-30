@@ -140,24 +140,27 @@ router.post('/login',
 
 //==========get all users ========
 
-  router.get("/allusers", protect, async (req, res) =>{
-
-
-      
-     const keyword = req.query.search? 
-       
-       {
-      $or: [
-              { name: { $regex: req.query.search, $options: "i"} },
-              { email: { $regex: req.query.search, $options: "i"} },
-            ],
+router.get("/allusers", protect, async (req, res) => {
+  const keyword = req.query.search
+    ? {
+        $or: [
+          { name: { $regex: req.query.search, $options: "i" } },
+          { email: { $regex: req.query.search, $options: "i" } },
+        ],
       }
-      : {};
-         
-      
-       const users = await User.find(keyword).find({_id:{$ne:req.user._id}});
+    : {};
 
-        res.send(users);
-  })
+  console.log(req.body);
+
+  try {
+    const users = await User.find({ ...keyword, _id: { $ne: req.user.id } });
+
+    res.send(users);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Server Error");
+  }
+});
+
 
 module.exports = router;

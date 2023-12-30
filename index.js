@@ -12,31 +12,25 @@ const app = express();
   dotenv.config();
 
   connectToMongo();
-  app.use(cors())
   app.use(express.json());
+
+
+  const allowedOrigins = ['http://localhost:3000'];
+
+    app.use(cors({
+      origin: function (origin, callback) {
+        if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+          callback(null, true);
+        } else {
+          callback(new Error('Not allowed by CORS'));
+        }
+      },
+    }));
 
 app.use("/api/user", userrouter);
 app.use("/api/chat", chatrouter);
 app.use("/api/message", require("./routes/messagerout") );
 app.use(router)
-
-// DEPLOYMENT__________=======
-
-// const __dirname1 = path.resolve();
-
-// if(process.env.NODE_ENV === "PRODUCTION"){
-     
-//   app.use(express.static(path.join(__dirname1, '/frontend/build')))
-
-//   app.get('*', (req,res) =>{
-//     res.sendFile(path.resolve(__dirname1, "frontend", "build", "index.html"))
-//   });
-
-// }else{
-//   app.get("/", (req, res) =>{
-//     res.send("running successfully");
-//   })
-// }
 
 app.use(notfound);
 
@@ -59,10 +53,10 @@ const io = require("socket.io")(server, {
 io.on("connection", (socket) => {
    console.log("connected to socket.io");
 
-   socket.on("setup", (userData) =>{
+   socket.on("setup", (userData) => {
     socket.join(userData._id);
     socket.emit("connected");
-   });
+  });
 
    socket.on("join chat", (room) =>{
     socket.join(room);
@@ -72,20 +66,21 @@ io.on("connection", (socket) => {
    socket.on("typing", (room) => socket.in(room).emit("typing"));
    socket.on("stop typing", (room) => socket.in(room).emit("stop typing"));
 
-   socket.on("new message", (newmessagereceived) =>{
-    let chat = newmessagereceived.chat;
+   socket.on("new message", (newMessageReceived) => {
+    let chat = newMessageReceived.chat;
 
-    if(!chat.users) return console.log("no users")
+    if (!chat.users) return console.log("no users");
 
-    chat.users.forEach( (user) =>{
-      if(user._id === newmessagereceived.sender._id) return;
+    chat.users.forEach((user) => {
+        if (user._id === newMessageReceived.sender._id) return;
 
-      socket.broadcast.emit("message received", newmessagereceived)})
-   });
+        socket.broadcast.emit("message received", newMessageReceived);
+    });
+  });
 
-   socket.off("setup", () =>{
+  socket.on("disconnect", () => {
     console.log("disconnected");
-    socket.leave(userData._id)
-   })
+    socket.leave(); 
+   });
 });
 
