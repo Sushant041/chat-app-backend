@@ -15,7 +15,7 @@ const app = express();
   app.use(express.json());
 
 
-  const allowedOrigins = ['https://chat-app-xt1n.onrender.com/'];
+  const allowedOrigins = ['https://chat-app-xt1n.onrender.com'];
 
     app.use(cors({
       origin: function (origin, callback) {
